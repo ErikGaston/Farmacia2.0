@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="0cfb46cdc82b4e94a818372a31f2d16b" Name="Diagram1">
+        <EntityTypeShape EntityType="DBRemediosModel.Remedios" Width="1.5" PointX="2.375" PointY="0.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBRemediosModel.sysdiagrams" Width="1.5" PointX="0.75" PointY="4.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBRemediosModel.Tipos_Remedios" Width="1.5" PointX="5.125" PointY="1.25" IsExpanded="true" />
+        <AssociationConnector Association="DBRemediosModel.FK_Remedios_Tipos_Remedios" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

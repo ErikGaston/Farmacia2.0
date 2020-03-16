@@ -1,0 +1,255 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Farmacia</title>
+    <link rel="shortcut icon" href=".../images/favicon.jpg" />
+
+    <link href="../Content/bootstrap.css" rel="stylesheet" />
+    <!--Font Awesome-->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <link href="../Content/Site.css" rel="stylesheet" />
+
+    <script src="../script/jquery-3.4.1.js"></script>
+    <script src="../script/popper.min.js"></script>
+    <script src="../script/js/bootstrap.js"></script>
+
+    <script src="../script/angular/angular.js"></script>
+    <script src="../script/ui-bootstrap-tpls-3.0.6.js"></script>
+    <script src="../script/app.js"></script>
+</head>
+
+<body ng-app="myApp" ng-controller="RemediosCtrl">
+    <!--MENU-->
+    <nav class="navbar navbar-expand-md fixed-top navbar-dark bg-dark">
+        <a class="navbar-brand" href="Inicio.html">Farmacia</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="Inicio.html">Inicio <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="Remedios.html">Remedios</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="TiposRemedios.html">Tipos de Remedios</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="Acercade.html">Acerca de</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div>
+            <h1>{{Titulo}} <small>{{TituloAccionABMC[AccionABMC]}}</small></h1>
+
+            <!-- Formulario Filtro de busqueda, se ve cuando la accion es Listado(busqueda/listado)-->
+            <form name="FormFiltro" class="bg-light" novalidate ng-show="AccionABMC == 'L'">
+                <div class="form-group row">
+                    <label class="col-form-label col-sm-2 col-sm-offset-1">
+                        Nombre:
+                    </label>
+                    <div class="col-sm-3">
+                        <input type="text" name="nombre"
+                               class="form-control"
+                               ng-model="DtoFiltro.nombre" />
+                    </div>
+                    <label class="col-form-label col-sm-2  text-left">
+                        en Stock:
+                    </label>
+                    <div class="col-sm-3">
+                        <select class="form-control"
+                                ng-model="DtoFiltro.enStock">
+                            <option value=''></option>
+                            <option value=true>SI</option>
+                            <option value=false>NO</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <!-- Botones -->
+                <div class="row justify-content-center">
+                    <button class="btn btn-primary" ng-click="Buscar()">
+                        <span class="fa fa-search"> </span> Consultar
+                    </button>
+                    <button class="btn btn-success" ng-click="Agregar()">
+                        <span class="fa fa-plus"> </span> Agregar
+                    </button>
+                </div>
+            </form>
+
+            <!--Tabla de resultados de busqueda y Paginador-->
+            <div id="TablayPaginador" ng-show="AccionABMC == 'L' && Lista.length">
+                <table class="table table-bordered table-striped">
+                    <tr>
+                        <th class="text-center">Nombre</th>
+                        <th class="text-center">Cantidad</th>
+                        <th class="text-center">Precio</th>
+                        <th class="text-center">Tipo de Remedio</th>
+                        <th class="text-center">Fecha de Vencimiento</th>
+                        <th class="text-center">En Stock</th>
+                        <th class="text-center text-nowrap">Acciones</th>
+                    </tr>
+                    <tr ng-repeat="dto in Lista">
+                        <td>{{dto.nombre | uppercase}}</td>
+                        <td>{{dto.cantidad_stock | number}}</td>
+                        <td>{{dto.precio | currency:'$'}}</td>
+                        <td>{{buscarNombre(dto.tipo_remedio)}}</td>
+                        <!--<td>{{dto.Tipos_Remedios.descripcion}}</td>-->
+                        <td>{{dto.fecha_vencimiento | date:'dd/MM/yyyy'}}</td>
+                        <td>{{dto.enStock ? 'SI' : 'NO'}}</td>
+                        <td class="text-center text-nowrap">
+                            <button class="btn btn-primary btn-sm" title="Ver"
+                                    ng-click="Consultar(dto)">
+                                <span class="fa fa-search"></span>
+                            </button>
+                            <button class="btn btn-primary btn-sm" title="Modificar"
+                                    ng-click="Modificar(dto)">
+                                <span class="fa fa-edit"></span>
+                            </button>
+                            <button class="btn  btn-sm btn-{{dto.enStock ? 'danger' : 'success'}}" title="{{dto.enStock ? 'Desactivar' : 'Activar' }}"
+                                    ng-click="ActivarDesactivar(dto)">
+                                <span class="fa fa-{{dto.enStock ? 'trash' : 'check'}}"></span>
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+                <!--Paginador-->
+                <div class="col-sm-12">
+                    <div class="row bg-light">
+                        <div class="col-sm-3">
+                            <span class="label label-default font-weight-bold">Registros: {{RegistrosTotal}}</span>
+                        </div>
+                        <div class="col-sm-6 text-center">
+                            <ul uib-pagination total-items="RegistrosTotal" ng-model="PaginaActual"
+                                max-size="10" class="pagination-sm" boundary-links="true"
+                                first-text="Primera" last-text="Ultima" previous-text="Anterior" next-text="Siguiente"
+                                rotate="true" ng-change="Buscar()"></ul>
+                        </div>
+                        <div class="col-sm-3 text-right">
+                            <button class="btn btn-primary" ng-click="ImprimirListado()"><span class="fa fa-print"></span> Imprimir</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!--No se encontraron registros-->
+            <div id="msjSD" class="alert alert-info" ng-show="AccionABMC == 'L' && Lista && Lista.length == 0">
+                <span class="fa fa-exclamation-sign"></span>{{Mensajes['SD']}}<!-- texto: No se encontraron registros -->
+            </div>
+
+            <!-- Registro en Alta,Modificacion y Consulta -->
+            <form name="FormReg" class="bg-light" novalidate ng-show="AccionABMC != 'L'">
+
+                <!--campo nombre-->
+                <div class="form-group row">
+                    <label class="col-form-label col-sm-2 col-sm-offset-2" for="nombre">Nombre <span class="text-danger">*</span></label>
+                    <div class="col-sm-6">
+                        <input type="text" name="nombre" required maxlength="30"
+                               class="form-control text-uppercase"
+                               ng-model="DtoSel.nombre" ng-disabled="AccionABMC === 'C'" />
+
+                        <span class="help-inline" ng-show="FormReg.nombre.$error.required && (FormReg.nombre.$touched || FormReg.$submitted)">Dato requerido.</span>
+                    </div>
+                </div>
+
+                <!--campo cantidad-->
+                <div class="row form-group">
+                    <label class="col-form-label col-sm-2 col-sm-offset-2" for="cantidad_stock">Cantidad <span class="text-danger">*</span></label>
+                    <div class="col-sm-6">
+                        <input type="text" name="cantidad_stock" required
+                               class="form-control" ng-pattern="/^[0-9]{1,10}$/"
+                               ng-model="DtoSel.cantidad_stock"
+                               ng-disabled="AccionABMC === 'C'" />
+                        <span class="help-inline" ng-show="FormReg.cantidad_stock.$error.required && (FormReg.cantidad_stock.$touched || FormReg.$submitted)">Dato requerido.</span>
+                        <span class="help-inline" ng-show="FormReg.cantidad_stock.$error.pattern">Dato numérico, 1 a 7 dígitos.</span>
+                    </div>
+                </div>
+
+                <!--campo precio-->
+                <div class="form-group row">
+                    <label class="col-form-label col-sm-2 col-sm-offset-2" for="precio">Precio <span class="text-danger">*</span>
+                    </label>
+                    <div class="col-sm-6">
+                        <input type="number" name="precio" required maxlength="7"
+                               class="form-control" ng-pattern="/^[0-9]{1,7}$/"
+                               ng-model="DtoSel.precio" ng-disabled="AccionABMC === 'C'" />
+                        <span class="help-inline" ng-show="FormReg.precio.$error.required  && (FormReg.precio.$touched || FormReg.$submitted)">Dato requerido.</span>
+                        <span class="help-inline" ng-show="FormReg.precio.$error.pattern ">Dato numérico, 1 a 7 dígitos.</span>
+                    </div>
+                </div>
+
+                <!--campo fecha_vencimiento-->
+                <div class="form-group row">
+                    <label class="col-form-label col-sm-2 col-sm-offset-2">Fecha de Vencimiento <span class="text-danger">*</span></label>
+                    <div class="col-sm-6">
+                        <input type="text" name="fecha_vencimiento" required maxlength="10"
+                               class="form-control"
+                               ng-model="DtoSel.fecha_vencimiento"
+                               ng-pattern="/^(0[1-9]|[12][0-9]|3[01])[-/](0[1-9]|1[012])[-/](19|20)\d\d$/"
+                               ng-disabled="AccionABMC === 'C'"
+                               uib-datepicker-popup="dd/MM/yyyy" is-open="Dtp_DtoSel_fecha_vencimiento"
+                               ng-dblclick="Dtp_DtoSel_fecha_vencimiento=true" />
+                        <span class="help-inline" ng-show="FormReg.fecha_vencimiento.$error.required && (FormReg.fecha_vencimiento.$touched || FormReg.$submitted)">Dato requerido.</span>
+                        <span class="help-inline" ng-show="FormReg.fecha_vencimiento.$error.pattern">Dato fecha, formato dd/mm/aaaa.</span>
+                    </div>
+                </div>
+
+
+                <!--campo Tipo de Remedio-->
+                <div class="form-group row">
+                    <label class="col-form-label col-sm-2 col-sm-offset-2" for="tipo_remedio">
+                        Tipo de Remedio
+                    </label>
+                    <div class="col-sm-6">
+                        <select name="tipo_remedio" ng-disabled="AccionABMC === 'C'"
+                                class="form-control"
+                                ng-model="DtoSel.tipo_remedio"
+                                ng-options="obj.id_Tipo as obj.descripcion for obj in tipos_remedios">
+                        </select>
+                    </div>
+                </div>
+
+                <!--campo enStock-->
+                <div class="form-group row">
+                    <label class="col-form-label col-sm-2 col-sm-offset-2" for="enStock">En Stock</label>
+                    <div class="col-sm-6">
+                        <select name="enStock" ng-disabled="AccionABMC === 'C'"
+                                class="form-control"
+                                ng-model="DtoSel.enStock"
+                                ng-options="obj.Id as obj.nombre for obj in OpcionesSiNo">
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Botones y alerta 'revisar datos' -->
+                <div class="row justify-content-center">
+                    <button class="btn btn-primary" ng-click="FormReg.$valid && Grabar()" ng-show=" AccionABMC == 'A'  || AccionABMC == 'M' ">
+                        <!--9 ng-show=" AccionABMC == 'A'  || AccionABMC == 'M' " -->
+                        <span class="fa fa-check"></span> Grabar
+                    </button>
+                    &nbsp;
+                    <button class="btn btn-warning" ng-click="Volver()">
+                        <span class="fa fa-remove"></span>{{AccionABMC == 'A'  || AccionABMC == 'M' ? 'Cancelar' : 'Volver'}}
+                    </button>
+                </div>
+                <div class="row alert alert-danger" ng-show="FormReg.$submitted && FormReg.$invalid">
+                    <span class="fa fa-exclamation-sign"></span>{{Mensajes['RD']}}<!--texto: Revisar los datos ingresados...-->
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</body>
+</html>
